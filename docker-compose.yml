@@ -1,6 +1,10 @@
+# NOTE: WHEN USING MAC DISABLE AIRPAY (SETTINGS -> GENERAL -> AIRDROP&HANDOFF -> AIRPLAY RECIEVER)
+# THIS WILL FREE THE PORT 7000 IN CASSANDRA
+
 services:
   cluster-master:
-    image: firasj/spark-docker-cluster
+    image: mrtshv/spark-docker-cluster
+    platform: linux/amd64
     container_name: cluster-master
     ports:
       - "8088:8088"
@@ -25,6 +29,7 @@ services:
     
   cluster-slave-1:
     image: firasj/spark-docker-cluster
+    platform: linux/amd64
     container_name: cluster-slave-1
     networks:
       - spark-cluster
@@ -41,6 +46,7 @@ services:
   #   tty: true
   cassandra-server:
     image: cassandra
+    platform: linux/amd64
     container_name: cassandra-server
     ports:
       - "7000:7000"
