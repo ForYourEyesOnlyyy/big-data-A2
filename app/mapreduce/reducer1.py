@@ -1,1 +1,4 @@
-print("this is reducer 1")
+import sys
+from cassandra.cluster import Cluster
+from collections import defaultdict
+

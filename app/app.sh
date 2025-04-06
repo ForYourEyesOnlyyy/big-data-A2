@@ -24,3 +24,5 @@ bash prepare_data.sh
 
 # Run the ranker
 # bash search.sh "this is a query!"
+
+exec bash
