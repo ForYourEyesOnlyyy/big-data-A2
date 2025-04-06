@@ -17,4 +17,6 @@ hdfs dfs -put -f a.parquet / && \
     hdfs dfs -put data / && \
     hdfs dfs -ls /data && \
     hdfs dfs -ls /index/data && \
+    # For local validation comment in final verison
+    hdfs dfs -get -f /index/data /app/index_output && \
     echo "done data preparation!"
