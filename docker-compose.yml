@@ -14,7 +14,6 @@ services:
       - "9870:9870"
     volumes:
       - "./app:/app"
-      - "./a.parquet:/app/a.parquet"
     networks:
       - spark-cluster
     depends_on:
