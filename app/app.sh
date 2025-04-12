@@ -22,6 +22,7 @@ bash prepare_data.sh
 
 
 # Run the indexer
+chmod +x index.sh
 bash index.sh
 
 # Run the ranker
