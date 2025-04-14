@@ -12,44 +12,35 @@ def tokenize(text):
     return re.findall(r'\w+', text.lower())
 
 def process_line(line):
-    """
-    Parse and process a single input line.
-    Returns a tuple: (doc_id, tokens, doc_length) or None if invalid.
-    """
     parts = line.strip().split("\t", 2)
     if len(parts) != 3:
-        sys.stderr.write(f"[mapper1] Invalid line (expected 3 tab-separated parts): {line}\n")
+        sys.stderr.write(f"[mapper1] Skipping malformed line: {line}\n")
         return None
-
     doc_id, title, content = parts
     full_text = f"{title} {content}"
     tokens = tokenize(full_text)
+    return doc_id, title, tokens, len(tokens)
 
-    return doc_id, tokens, len(tokens)
-
-def emit(doc_id, tokens, doc_length):
-    """
-    Emit document length and term-document pairs.
-    Output format is tab-separated, one per line.
-    """
+def emit(doc_id, title, tokens, doc_length):
     print(f"!doclen\t{doc_id}\t{doc_length}")
+    print(f"!title\t{doc_id}\t{title}")
     for token in tokens:
         print(f"{token}\t{doc_id}")
+
 
 def main():
     for line in sys.stdin:
         if not line.strip():
             continue
-
         try:
             result = process_line(line)
             if result:
-                doc_id, tokens, doc_length = result
-                emit(doc_id, tokens, doc_length)
+                doc_id, title, tokens, doc_length = result
+                emit(doc_id, title, tokens, doc_length)
         except Exception as e:
-            sys.stderr.write(f"[mapper1] Exception during processing: {e}\n")
+            sys.stderr.write(f"[mapper1] Error processing line: {e}\n")
             traceback.print_exc(file=sys.stderr)
-            continue
+
 
 if __name__ == "__main__":
     main()

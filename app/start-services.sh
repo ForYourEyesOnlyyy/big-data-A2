@@ -8,6 +8,7 @@ $HADOOP_HOME/sbin/start-dfs.sh
 $HADOOP_HOME/sbin/start-yarn.sh
 # yarn --daemon start resourcemanager
 
+
 # Start mapreduce history server
 mapred --daemon start historyserver
 

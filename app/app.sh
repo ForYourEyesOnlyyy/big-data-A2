@@ -15,7 +15,6 @@ pip install -r requirements.txt
 # Package the virtual env.
 venv-pack -o .venv.tar.gz
 
-# hdfs dfs -chmod -R 755 /user/root/.sparkStaging
 
 # Collect data
 bash prepare_data.sh
@@ -26,6 +25,9 @@ chmod +x index.sh
 bash index.sh
 
 # Run the ranker
-# bash search.sh "this is a query!"
+chmod +x search.sh
+bash search.sh "live album by pianist Les McCann"
+bash search.sh "Czech film directed by Karel Zeman"
+bash search.sh "1947 American film noir"
 
 exec bash

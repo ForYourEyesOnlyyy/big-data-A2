@@ -38,21 +38,21 @@
 
 from pathvalidate import sanitize_filename
 from tqdm import tqdm
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, functions as F
 
+    # .config("spark.driver.memory", "4g") \
+    # .config("spark.executor.memory", "4g") \
 
 spark = SparkSession.builder \
     .appName('data preparation') \
-    .master("local") \
-    .config("spark.driver.memory", "4g") \
-    .config("spark.executor.memory", "4g") \
+    .master("local[2]") \
     .config("spark.sql.parquet.enableVectorizedReader", "true") \
     .getOrCreate()
 
 
 df = spark.read.parquet("/a.parquet")
-n = 100
-df = df.select(['id', 'title', 'text']).sample(fraction=100 * n / df.count(), seed=0).limit(n)
+n = 101
+df = df.select(['id', 'title', 'text']).sample(fraction=n / df.count(), seed=0)
 
 
 def create_doc(row):
@@ -66,4 +66,15 @@ def create_docs(partition):
 
 df.foreachPartition(create_docs)
 
-df.write.csv("/index/data", sep = "\t")
+# df \
+#     .select(
+#         F.col("id").cast("string").alias("doc_id"),
+#         F.col("title").alias("doc_title"),
+#         F.col("text").alias("doc_text")
+#     ) \
+#     .repartition(4) \
+#     .write \
+#     .option("sep", "\t") \
+#     .csv("/index/data")
+
+df.write.csv("/index/data", sep="\t")

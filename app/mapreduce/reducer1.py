@@ -42,6 +42,12 @@ def create_tables(session):
                 length int
             )
         """)
+        session.execute("""
+            CREATE TABLE IF NOT EXISTS documents (
+                doc_id text PRIMARY KEY,
+                title text
+            )
+        """)
         sys.stderr.write("Tables checked/created.\n")
     except Exception as e:
         raise RuntimeError(f"Error creating tables: {e}")
@@ -52,9 +58,9 @@ def insert_doc_length(session, doc_id, length):
             "INSERT INTO doc_lengths (doc_id, length) VALUES (%s, %s)",
             (doc_id, int(length))
         )
+        print(f"!doclen\t{doc_id}\t{length}")
     except Exception as e:
         sys.stderr.write(f"Failed to insert doc_length ({doc_id}): {e}\n")
-
 
 def insert_term_index(session, term, doc_id, count):
     try:
@@ -62,9 +68,18 @@ def insert_term_index(session, term, doc_id, count):
             "INSERT INTO term_index (term, doc_id, count) VALUES (%s, %s, %s)",
             (term, doc_id, count)
         )
+        print(f"{term}\t{doc_id}\t{count}")
     except Exception as e:
         sys.stderr.write(f"Failed to insert term_index ({term}, {doc_id}): {e}\n")
 
+def insert_document_title(session, doc_id, title):
+    try:
+        session.execute(
+            "INSERT INTO documents (doc_id, title) VALUES (%s, %s)",
+            (doc_id, title)
+        )
+    except Exception as e:
+        sys.stderr.write(f"Failed to insert document title ({doc_id}): {e}\n")
 
 def run_reducer(session):
     prev_key = None
@@ -76,6 +91,7 @@ def run_reducer(session):
             continue
 
         parts = line.split("\t")
+
         if not parts or len(parts) < 2:
             sys.stderr.write(f"⚠️ Malformed input skipped: {line}\n")
             continue
@@ -86,6 +102,14 @@ def run_reducer(session):
                 continue
             _, doc_id, length = parts
             insert_doc_length(session, doc_id, length)
+            continue
+
+        if parts[0] == "!title":
+            if len(parts) != 3:
+                sys.stderr.write(f"⚠️ Invalid !title format: {line}\n")
+                continue
+            _, doc_id, title = parts
+            insert_document_title(session, doc_id, title)
             continue
 
         try:
@@ -106,11 +130,10 @@ def run_reducer(session):
             traceback.print_exc(file=sys.stderr)
             continue
 
-    # Flush last key
+    # Final flush
     if prev_key:
         t, d = prev_key
         insert_term_index(session, t, d, count)
-
 
 if __name__ == "__main__":
     try:
@@ -118,8 +141,8 @@ if __name__ == "__main__":
         create_tables(session)
         run_reducer(session)
         cluster.shutdown()
-        sys.stderr.write("Reducer finished successfully.\n")
+        sys.stderr.write("Reducer 1 finished successfully.\n")
     except Exception as e:
-        sys.stderr.write(f"Reducer failed: {e}\n")
+        sys.stderr.write(f"Reducer 1 failed: {e}\n")
         traceback.print_exc(file=sys.stderr)
         sys.exit(1)
